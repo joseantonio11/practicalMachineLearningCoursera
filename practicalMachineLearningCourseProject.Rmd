@@ -1,17 +1,147 @@
 # Practical Machine Learning Course Project - Predicting the Quality of Weight Lifting
 
 ## Data Loading:
+```{r}
+trainingUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+testingUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+download.file(trainingUrl, "pml-training.csv",  method="curl")
+download.file(testingUrl, "pml-testing.csv",  method="curl")
+
+training <- read.csv("pml-training.csv", na.strings=c("NA",""))
+testing <- read.csv("pml-testing.csv", na.strings=c("NA",""))
+dim(training); dim(testing)
+```
 
 ## Data Processing:
+### Check for NAs and remove NAs from the training data
+Training data has missing NAs:  
+```{r}
+sum(is.na(training))  # total NAs in training data
+```
+Use str() and see many variables having NAs, so find out which variables have NAs and remove those variables from training data:
+```{r}
+varNACounts <- colSums(is.na(training))  # find out which variables have NAs (i.e colSums not equal to 0)
+badVars <- varNACounts >= 19000          # set those variables with NAs to TRUE
+goodTrainingData <- training[!badVars]   # Remove those variables with NAs from the training data
+sum(is.na(goodTrainingData))             # check good training data has no NAs
+```
+Next remove variables that would have no affect on the outcome:
+```{r}
+goodTrainingData <- goodTrainingData[,-c(1:7)]
+dim(goodTrainingData)
+```
+The good training data has the same number of observations as the original training data except now with less variables (60 vesus 160)
+
+### Check for NAs and remove NAs from the testing data
+Testing data has missing NAs:
+```{r}
+sum(is.na(testing))  # total NAs in testing data
+```
+Use str() and see many variables having NAs, so find out which variables have NAs and remove those variables from testing data:
+```{r}
+varNACounts <- colSums(is.na(testing))  # find out which variables have NAs (i.e colSums not equal to 0)
+badVars <- varNACounts >= 20            # set those variables with NAs to TRUE
+goodTestingData <- testing[!badVars]    # Remove those variables with NAs from the testing data
+sum(is.na(goodTestingData))             # check good testing data has no NAs
+```
+Next remove variables that would have no affect on the outcome:
+```{r}
+goodTestingData <- goodTestingData[,-c(1:7)]
+dim(goodTestingData)
+```
+The good testing data has the same number of observations as the original testing data except now with less variables (60 vesus 160)
 
 ## Exploratory Data Analysis:
+```{r}
+summary(goodTrainingData$classe)
+```
 
-## Model Building:
+```{r}
+counts <- table(goodTrainingData$classe)
+barplot(counts, col=c("red", "yellow", "green", "blue", "purple"), main = "Excercise Class(classe) Distribution", xlab = "Classes of Exercise(classe)")
+```
 
-## Cross validation:
-### In Sample Accuracy:
-### Out of Sample Accuracy:
+## Training Data Partition:
+Partition the good training data into training dataset (for building model) and cross validation dataset (for cross validation tesing the trained model)
+```{r}
+library (caret)
+```
+```{r}
+inTrain <- createDataPartition(y=goodTrainingData$classe, p=0.6, list=FALSE)
+trainingSet <- goodTrainingData[inTrain,]
+crossValSet <- goodTrainingData[-inTrain,]
+dim(trainingSet)
+```
 
-## Trained Model Prediction on Testing Dataset:
+## Model Building with Training Dataset:
+### Remove highly correlated variables from training set
+Create correlation matrix plot to visualize highly correlated variables:
+```{r}
+library(corrplot)
+corMat <- cor(trainingSet[,-dim(trainingSet)[2]],)
+corrplot(corMat, method = "color", type="lower", order="hclust", tl.cex = 0.75, tl.col="black", tl.srt = 45)
+```
+Remove highly correlated variable with correlation cutoff = 0.5:
+```{r}
+highlyCorVars <- findCorrelation(corMat, cutoff = 0.5)
+newTrainingSet <- trainingSet[,-highlyCorVars]
+dim(newTrainingSet)
+```
+
+Re-plot correlation matrix to see if highly correlated variables are removed:
+```{r}
+newCorMat <- cor(newTrainingSet[,-dim(newTrainingSet)[2]])
+corrplot(newCorMat, method = "color", type="lower", order="hclust", tl.cex = 0.75, tl.col="black", tl.srt = 45)
+```
+
+### Build model using the random forest method
+```{r}
+library(randomForest)
+library(e1071)
+modFit <- train(newTrainingSet$classe ~., data = newTrainingSet, method = "rf", 
+                trControl = trainControl(method = "cv", number = 4))
+```
+```{r}
+print(modFit)
+```
+
+### Compute in-sample accuracy
+```{r}
+trainingPred <- predict(modFit, newTrainingSet)
+confusionMatrix(trainingPred, newTrainingSet$classe)
+```
+
+## Cross validation with Testing Dataset:
+### Tesing the trained model on the cross validation dataset
+```{r}
+testingPred <- predict(modFit, crossValSet)
+```
+
+### Compute out-of-sample accuracy:
+```{r}
+confusionMatrix(testingPred, crossValSet$classe)
+```
+
+
+## Trained Model Prediction on the Twenty Testing Data:
+```{r}
+answers <- predict(modFit, goodTestingData)
+answers <- as.character(answers)
+answers
+```
+
+Write answers to output text files:
+```{r}
+pml_write_files = function(x) {
+    n = length(x)
+    for (i in 1:n) {
+        filename = paste0("problem_id_", i, ".txt")
+        write.table(x[i], file = filename, quote = FALSE, row.names = FALSE, 
+            col.names = FALSE)
+    }
+}
+
+pml_write_files(answers)
+```
 
 ## Conclusion:
