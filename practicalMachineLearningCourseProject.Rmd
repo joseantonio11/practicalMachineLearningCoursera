@@ -2,6 +2,7 @@
 
 ## Background:
 The goal of this project is to predict the quality of exercises performed by athletes.  The data for this project come from this source:[http://groupware.les.inf.puc-rio.br/har](http://groupware.les.inf.puc-rio.br/har).  In this study, several athletes were asked to perfrom weight lefting exercises correctly and incorrectly in 5 different ways/classes.  The project provides us two datasets: a [training dataset](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv) and a [testing dataset](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv).  Both datasets contain several predictor variables which we can used to predict the outcome classe which represent the class a given exercise belongs to.  The classe varibale (which is a factor variable with four levels A,B,C,D,E) is present in the training dataset but not in the testing dataset.  Our tasks are:
+
 1. Partition the training dataset into training set and cross-validation set
 2. Use the traning set to build a model for predicting the outcome classe and compute the in-sample error
 3. Test the trained model on the the cross-validation set and compute the out-of-sample error

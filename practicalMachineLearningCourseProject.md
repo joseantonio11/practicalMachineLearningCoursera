@@ -2,6 +2,7 @@
 
 ## Background:
 The goal of this project is to predict the quality of exercises performed by athletes.  The data for this project come from this source:[http://groupware.les.inf.puc-rio.br/har](http://groupware.les.inf.puc-rio.br/har).  In this study, several athletes were asked to perfrom weight lefting exercises correctly and incorrectly in 5 different ways/classes.  The project provides us two datasets: a [training dataset](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv) and a [testing dataset](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv).  Both datasets contain several predictor variables which we can used to predict the outcome classe which represent the class a given exercise belongs to.  The classe varibale (which is a factor variable with four levels A,B,C,D,E) is present in the training dataset but not in the testing dataset.  Our tasks are:
+
 1. Partition the training dataset into training set and cross-validation set
 2. Use the traning set to build a model for predicting the outcome classe and compute the in-sample error
 3. Test the trained model on the the cross-validation set and compute the out-of-sample error
@@ -207,14 +208,14 @@ print(modFit)
 ## No pre-processing
 ## Resampling: Cross-Validated (4 fold) 
 ## 
-## Summary of sample sizes: 8832, 8831, 8832, 8833 
+## Summary of sample sizes: 8832, 8834, 8830, 8832 
 ## 
 ## Resampling results across tuning parameters:
 ## 
 ##   mtry  Accuracy  Kappa  Accuracy SD  Kappa SD
-##    2    0.974     0.967  0.00394      0.00499 
-##   11    0.965     0.956  0.00362      0.00459 
-##   21    0.953     0.941  0.00480      0.00608 
+##    2    0.972     0.964  0.00355      0.00450 
+##   11    0.961     0.951  0.00750      0.00951 
+##   21    0.947     0.933  0.00957      0.01212 
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was mtry = 2.
@@ -282,33 +283,33 @@ confusionMatrix(testingPred, crossValSet$classe)
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 2225   14    2    1    0
-##          B    6 1473   18    0    1
-##          C    0   17 1329   38    2
-##          D    1   10   16 1240    5
-##          E    0    4    3    7 1434
+##          A 2219   23    2    0    0
+##          B    7 1480   14    1    2
+##          C    1   11 1340   52    3
+##          D    3    2   12 1227    6
+##          E    2    2    0    6 1431
 ## 
 ## Overall Statistics
 ##                                           
-##                Accuracy : 0.9815          
-##                  95% CI : (0.9783, 0.9844)
+##                Accuracy : 0.981           
+##                  95% CI : (0.9777, 0.9839)
 ##     No Information Rate : 0.2845          
 ##     P-Value [Acc > NIR] : < 2.2e-16       
 ##                                           
-##                   Kappa : 0.9766          
-##  Mcnemar's Test P-Value : NA              
+##                   Kappa : 0.976           
+##  Mcnemar's Test P-Value : 5.959e-06       
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9969   0.9704   0.9715   0.9642   0.9945
-## Specificity            0.9970   0.9960   0.9912   0.9951   0.9978
-## Pos Pred Value         0.9924   0.9833   0.9589   0.9748   0.9903
-## Neg Pred Value         0.9988   0.9929   0.9940   0.9930   0.9987
+## Sensitivity            0.9942   0.9750   0.9795   0.9541   0.9924
+## Specificity            0.9955   0.9962   0.9897   0.9965   0.9984
+## Pos Pred Value         0.9889   0.9840   0.9524   0.9816   0.9931
+## Neg Pred Value         0.9977   0.9940   0.9957   0.9911   0.9983
 ## Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
-## Detection Rate         0.2836   0.1877   0.1694   0.1580   0.1828
-## Detection Prevalence   0.2858   0.1909   0.1767   0.1621   0.1846
-## Balanced Accuracy      0.9969   0.9832   0.9813   0.9797   0.9961
+## Detection Rate         0.2828   0.1886   0.1708   0.1564   0.1824
+## Detection Prevalence   0.2860   0.1917   0.1793   0.1593   0.1837
+## Balanced Accuracy      0.9949   0.9856   0.9846   0.9753   0.9954
 ```
 The above statistics shows the out-of-sample accuracy is 0.986 which is about 98%
 
