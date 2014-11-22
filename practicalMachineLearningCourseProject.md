@@ -1,6 +1,14 @@
-# Practical Machine Learning Course Project - Predicting the Quality of Weight Lifting
+# Practical Machine Learning Course Project - Predicting the Quality of Weight Lifting Exercises
+
+## Background:
+The goal of this project is to predict the quality of exercises performed by athletes.  The data for this project come from this source:[http://groupware.les.inf.puc-rio.br/har](http://groupware.les.inf.puc-rio.br/har).  In this study, several athletes were asked to perfrom weight lefting exercises correctly and incorrectly in 5 different ways/classes.  The project provides us two datasets: a [training dataset](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv) and a [testing dataset](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv).  Both datasets contain several predictor variables which we can used to predict the outcome classe which represent the class a given exercise belongs to.  The classe varibale (which is a factor variable with four levels A,B,C,D,E) is present in the training dataset but not in the testing dataset.  Our tasks are:
+1. Partition the training dataset into training set and cross-validation set
+2. Use the traning set to build a model for predicting the outcome classe and compute the in-sample error
+3. Test the trained model on the the cross-validation set and compute the out-of-sample error
+4. Use the trained model to predict classe for each of the 20 different test cases in the testing dataset
 
 ## Data Loading:
+Loading the training dataset and testing dataset into R:
 
 ```r
 trainingUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
@@ -22,8 +30,8 @@ dim(training); dim(testing)
 ```
 
 ## Data Processing:
-### Check for NAs and remove NAs from the training data
-Training data has missing NAs:  
+### Check for NAs and remove NAs from the training dataset
+Training dataset has missing NAs:
 
 ```r
 sum(is.na(training))  # total NAs in training data
@@ -32,7 +40,8 @@ sum(is.na(training))  # total NAs in training data
 ```
 ## [1] 1921600
 ```
-Use str() and see many variables having NAs, so find out which variables have NAs and remove those variables from training data:
+
+Use str() and see many variables having NAs, so find out which variables have NAs and remove those variables from the training dataset:
 
 ```r
 varNACounts <- colSums(is.na(training))  # find out which variables have NAs (i.e colSums not equal to 0)
@@ -54,10 +63,10 @@ dim(goodTrainingData)
 ```
 ## [1] 19622    53
 ```
-The good training data has the same number of observations as the original training data except now with less variables (60 vesus 160)
+The good training dataset has the same number of observations as the original training data except now with less variables (53 vesus 160)
 
-### Check for NAs and remove NAs from the testing data
-Testing data has missing NAs:
+### Check for NAs and remove NAs from the testing dataset
+Testing dataset has missing NAs:
 
 ```r
 sum(is.na(testing))  # total NAs in testing data
@@ -66,7 +75,7 @@ sum(is.na(testing))  # total NAs in testing data
 ```
 ## [1] 2000
 ```
-Use str() and see many variables having NAs, so find out which variables have NAs and remove those variables from testing data:
+Use str() and see many variables having NAs, so find out which variables have NAs and remove those variables from the testing dataset:
 
 ```r
 varNACounts <- colSums(is.na(testing))  # find out which variables have NAs (i.e colSums not equal to 0)
@@ -88,9 +97,10 @@ dim(goodTestingData)
 ```
 ## [1] 20 53
 ```
-The good testing data has the same number of observations as the original testing data except now with less variables (60 vesus 160)
+The good testing data has the same number of observations as the original testing data except now with less variables (53 vesus 160)
 
 ## Exploratory Data Analysis:
+Look at summary statistics and distribution of the classe outcome variable:
 
 ```r
 summary(goodTrainingData$classe)
@@ -110,7 +120,7 @@ barplot(counts, col=c("red", "yellow", "green", "blue", "purple"), main = "Excer
 ![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png) 
 
 ## Training Data Partition:
-Partition the good training data into training dataset (for building model) and cross validation dataset (for cross validation tesing the trained model)
+Partition the good training data into training set (for building model) and cross validation set (for cross validation tesing of the trained model):
 
 ```r
 library (caret)
@@ -132,9 +142,9 @@ dim(trainingSet)
 ## [1] 11776    53
 ```
 
-## Model Building with Training Dataset:
-### Remove highly correlated variables from training set
-Create correlation matrix plot to visualize highly correlated variables:
+## Model Building with the Training Set:
+### Remove highly correlated variables from the training set
+Since there are many predictor variables in the training set.  To avoid overfitting, it is good idea to remove strongly correlated variables from the tranining set.  Create correlation matrix plot to visualize highly correlated variables:
 
 ```r
 library(corrplot)
@@ -143,7 +153,8 @@ corrplot(corMat, method = "color", type="lower", order="hclust", tl.cex = 0.75, 
 ```
 
 ![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png) 
-Remove highly correlated variable with correlation cutoff = 0.5:
+
+The correlation matrix plot above shows there are several variables that are strongly correlated (depicted by darker red or blue color).  Remove strongly correlated variables with correlation cutoff = 0.5 from the training dataset:
 
 ```r
 highlyCorVars <- findCorrelation(corMat, cutoff = 0.5)
@@ -152,10 +163,9 @@ dim(newTrainingSet)
 ```
 
 ```
-## [1] 11776    24
+## [1] 11776    22
 ```
-
-Re-plot correlation matrix to see if highly correlated variables are removed:
+Re-plot correlation matrix plot to see if strongly correlated variables are removed:
 
 ```r
 newCorMat <- cor(newTrainingSet[,-dim(newTrainingSet)[2]])
@@ -164,7 +174,9 @@ corrplot(newCorMat, method = "color", type="lower", order="hclust", tl.cex = 0.7
 
 ![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14-1.png) 
 
-### Build model using the random forest method
+The correlation matrix plot above shows no significant correlation between the variables in the final new training set.
+
+### Build model with the final new training set using the random forests machine learning algorihm with 4-fold cross validation resampling method:    
 
 ```r
 library(randomForest)
@@ -189,26 +201,27 @@ print(modFit)
 ## Random Forest 
 ## 
 ## 11776 samples
-##    23 predictor
+##    21 predictor
 ##     5 classes: 'A', 'B', 'C', 'D', 'E' 
 ## 
 ## No pre-processing
 ## Resampling: Cross-Validated (4 fold) 
 ## 
-## Summary of sample sizes: 8831, 8834, 8832, 8831 
+## Summary of sample sizes: 8832, 8831, 8832, 8833 
 ## 
 ## Resampling results across tuning parameters:
 ## 
 ##   mtry  Accuracy  Kappa  Accuracy SD  Kappa SD
-##    2    0.974     0.967  0.00316      0.00401 
-##   12    0.967     0.959  0.00430      0.00545 
-##   23    0.955     0.943  0.00607      0.00770 
+##    2    0.974     0.967  0.00394      0.00499 
+##   11    0.965     0.956  0.00362      0.00459 
+##   21    0.953     0.941  0.00480      0.00608 
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was mtry = 2.
 ```
 
-### Compute in-sample accuracy
+### Compute in-sample accuracy:
+In-sample accuracy is the prediction accuracy of the trained model on the training set:
 
 ```r
 trainingPred <- predict(modFit, newTrainingSet)
@@ -248,15 +261,17 @@ confusionMatrix(trainingPred, newTrainingSet$classe)
 ## Detection Prevalence   0.2843   0.1935   0.1744   0.1639   0.1838
 ## Balanced Accuracy      1.0000   1.0000   1.0000   1.0000   1.0000
 ```
+The above statistics shows the in-sample accuracy is 1 which is 100%.
 
-## Cross validation with Testing Dataset:
-### Tesing the trained model on the cross validation dataset
+## Cross validation with Cross Validation Dataset:
+### Tesing the trained model on the cross validation set:
 
 ```r
 testingPred <- predict(modFit, crossValSet)
 ```
 
 ### Compute out-of-sample accuracy:
+Out-of-sample accuracy is the prediction accuracy of the trained model on the cross validation set:
 
 ```r
 confusionMatrix(testingPred, crossValSet$classe)
@@ -267,37 +282,38 @@ confusionMatrix(testingPred, crossValSet$classe)
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 2224   19    2    1    0
-##          B    2 1492   16    0    0
-##          C    0    4 1342   42    3
-##          D    5    0    8 1242    2
-##          E    1    3    0    1 1437
+##          A 2225   14    2    1    0
+##          B    6 1473   18    0    1
+##          C    0   17 1329   38    2
+##          D    1   10   16 1240    5
+##          E    0    4    3    7 1434
 ## 
 ## Overall Statistics
 ##                                           
-##                Accuracy : 0.9861          
-##                  95% CI : (0.9833, 0.9886)
+##                Accuracy : 0.9815          
+##                  95% CI : (0.9783, 0.9844)
 ##     No Information Rate : 0.2845          
 ##     P-Value [Acc > NIR] : < 2.2e-16       
 ##                                           
-##                   Kappa : 0.9824          
+##                   Kappa : 0.9766          
 ##  Mcnemar's Test P-Value : NA              
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9964   0.9829   0.9810   0.9658   0.9965
-## Specificity            0.9961   0.9972   0.9924   0.9977   0.9992
-## Pos Pred Value         0.9902   0.9881   0.9648   0.9881   0.9965
-## Neg Pred Value         0.9986   0.9959   0.9960   0.9933   0.9992
+## Sensitivity            0.9969   0.9704   0.9715   0.9642   0.9945
+## Specificity            0.9970   0.9960   0.9912   0.9951   0.9978
+## Pos Pred Value         0.9924   0.9833   0.9589   0.9748   0.9903
+## Neg Pred Value         0.9988   0.9929   0.9940   0.9930   0.9987
 ## Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
-## Detection Rate         0.2835   0.1902   0.1710   0.1583   0.1832
-## Detection Prevalence   0.2863   0.1925   0.1773   0.1602   0.1838
-## Balanced Accuracy      0.9962   0.9900   0.9867   0.9817   0.9979
+## Detection Rate         0.2836   0.1877   0.1694   0.1580   0.1828
+## Detection Prevalence   0.2858   0.1909   0.1767   0.1621   0.1846
+## Balanced Accuracy      0.9969   0.9832   0.9813   0.9797   0.9961
 ```
-
+The above statistics shows the out-of-sample accuracy is 0.986 which is about 98%
 
 ## Trained Model Prediction on the Twenty Testing Data:
+Now use the trained model to predict classe for each of the 20 different test cases in the testing dataset:
 
 ```r
 answers <- predict(modFit, goodTestingData)
@@ -310,7 +326,7 @@ answers
 ## [18] "B" "B" "B"
 ```
 
-Write answers to output text files:
+Finally write the answers to the output text files which are used to submit to the [Course Project: Submission](https://class.coursera.org/predmachlearn-007/assignment/index):
 
 ```r
 pml_write_files = function(x) {
@@ -326,3 +342,4 @@ pml_write_files(answers)
 ```
 
 ## Conclusion:
+I have used random forests machine learning algorithm to build a model for predicting the quality of exercises performed by athletes.  My model has an in-sample accuracy of 100% and an out-of-sample accuracy between 98 and 99% (or between 1 and 2% out-of-sample error ). After applying my model to obtain predictions for the 20 different test cases in the testing dataset, I submitted those predictions to the [Course Project: Submission](https://class.coursera.org/predmachlearn-007/assignment/index) and got all of the predictions correctly. 
