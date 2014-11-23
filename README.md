@@ -5,7 +5,7 @@ Repository for Coursera Practical Machine Learning course final project
 
 Course project graders, 
 
-No need to download html file.  Here are the two ways to read .html in GitHub directly without having to down load the html file: 
+No need to download html file.  Here are two ways to read .html in GitHub directly without having to download the html file: 
 
 (1) You can get a decent preview .html by clicking on .md file .
 
